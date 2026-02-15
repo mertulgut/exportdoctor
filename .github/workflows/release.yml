@@ -17,15 +17,21 @@ jobs:
           - platform: macos-latest
             target: aarch64-apple-darwin
             ffprobe_binary: ffprobe-aarch64-apple-darwin
-          - platform: macos-latest
+            ffprobe_source: brew
+          - platform: macos-13
             target: x86_64-apple-darwin
             ffprobe_binary: ffprobe-x86_64-apple-darwin
+            ffprobe_source: brew
           - platform: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             ffprobe_binary: ffprobe-x86_64-unknown-linux-gnu
+            ffprobe_source: btbn
+            ffprobe_url: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
             ffprobe_binary: ffprobe-x86_64-pc-windows-msvc.exe
+            ffprobe_source: btbn
+            ffprobe_url: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -51,15 +57,58 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # ── ffprobe: macOS (brew) ──
+      - name: Download ffprobe (brew)
+        if: matrix.ffprobe_source == 'brew'
+        run: |
+          brew install --quiet ffmpeg
+          FFPROBE_PATH=$(which ffprobe)
+          cp "$FFPROBE_PATH" "src-tauri/${{ matrix.ffprobe_binary }}"
+          chmod +x "src-tauri/${{ matrix.ffprobe_binary }}"
+          echo "Copied ffprobe from $FFPROBE_PATH to src-tauri/${{ matrix.ffprobe_binary }}"
+
+      # ── ffprobe: Linux (BtbN tar.xz) ──
+      - name: Download ffprobe (Linux)
+        if: matrix.ffprobe_source == 'btbn' && matrix.platform == 'ubuntu-22.04'
+        run: |
+          curl -fSL "${{ matrix.ffprobe_url }}" -o ffmpeg-archive.tar.xz
+          mkdir -p ffmpeg-tmp
+          tar -xf ffmpeg-archive.tar.xz -C ffmpeg-tmp
+          FFPROBE_BIN=$(find ffmpeg-tmp -name "ffprobe" -type f | head -1)
+          if [ -z "$FFPROBE_BIN" ]; then
+            echo "ERROR: ffprobe not found in archive"
+            exit 1
+          fi
+          cp "$FFPROBE_BIN" "src-tauri/${{ matrix.ffprobe_binary }}"
+          chmod +x "src-tauri/${{ matrix.ffprobe_binary }}"
+          echo "Extracted ffprobe to src-tauri/${{ matrix.ffprobe_binary }}"
+          rm -rf ffmpeg-tmp ffmpeg-archive.tar.xz
+
+      # ── ffprobe: Windows (BtbN zip) ──
+      - name: Download ffprobe (Windows)
+        if: matrix.ffprobe_source == 'btbn' && matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "${{ matrix.ffprobe_url }}" -OutFile ffmpeg-archive.zip
+          Expand-Archive -Path ffmpeg-archive.zip -DestinationPath ffmpeg-tmp
+          $ffprobeBin = Get-ChildItem -Path ffmpeg-tmp -Recurse -Filter "ffprobe.exe" | Select-Object -First 1
+          if (-not $ffprobeBin) {
+            Write-Error "ERROR: ffprobe.exe not found in archive"
+            exit 1
+          }
+          Copy-Item $ffprobeBin.FullName -Destination "src-tauri/${{ matrix.ffprobe_binary }}"
+          Write-Output "Extracted ffprobe to src-tauri/${{ matrix.ffprobe_binary }}"
+          Remove-Item -Recurse -Force ffmpeg-tmp, ffmpeg-archive.zip
+
       - name: Verify ffprobe sidecar
         shell: bash
         run: |
           if [ ! -f "src-tauri/${{ matrix.ffprobe_binary }}" ]; then
-            echo "WARNING: ffprobe sidecar not found: src-tauri/${{ matrix.ffprobe_binary }}"
-            echo "The build will proceed but the app will fall back to system ffprobe."
-          else
-            echo "ffprobe sidecar found: src-tauri/${{ matrix.ffprobe_binary }}"
+            echo "ERROR: ffprobe sidecar not found: src-tauri/${{ matrix.ffprobe_binary }}"
+            exit 1
           fi
+          echo "ffprobe sidecar ready: src-tauri/${{ matrix.ffprobe_binary }}"
+          ls -la "src-tauri/${{ matrix.ffprobe_binary }}"
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
