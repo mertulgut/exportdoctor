@@ -30,3 +30,6 @@ PLAN.md
 
 # ffprobe binaries (too large for GitHub)
 src-tauri/ffprobe-*
+
+# ffprobe binaries (never commit)
+src-tauri/ffprobe-*
