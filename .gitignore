@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+src-tauri/target/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Tauri generated
+src-tauri/gen/
+
+# Sidecar binaries (large, download via setup script)
+src-tauri/binaries/ffprobe-*
+
+# Plan files
+PLAN.md
+
+# ffprobe binaries (too large for GitHub)
+src-tauri/ffprobe-*
+
+# ffprobe binaries (too large for GitHub)
+src-tauri/ffprobe-*

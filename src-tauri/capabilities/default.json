@@ -1,0 +1,50 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Main window permissions",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-read-text",
+    "fs:default",
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [{ "path": "**" }]
+    },
+    "updater:default",
+    "process:allow-restart",
+    "process:allow-exit",
+    "store:default",
+    "opener:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "ffprobe",
+          "sidecar": true,
+          "args": true
+        },
+        {
+          "name": "ffprobe",
+          "args": true
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "ffprobe",
+          "sidecar": true,
+          "args": true
+        },
+        {
+          "name": "ffprobe",
+          "args": true
+        }
+      ]
+    }
+  ]
+}
