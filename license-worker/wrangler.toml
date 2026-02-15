@@ -1,0 +1,10 @@
+name = "export-doctor-license"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+STRIPE_PRICE_ID = "price_1Sz0uwEJV0hj7kGh5KupmjJd"
+
+[[kv_namespaces]]
+binding = "LICENSES"
+id = "4bf2f1ff845e495392832c5a3bad42ca"
