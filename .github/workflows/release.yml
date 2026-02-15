@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -28,6 +28,7 @@ jobs:
             ffprobe_binary: ffprobe-x86_64-pc-windows-msvc.exe
 
     runs-on: ${{ matrix.platform }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,20 +47,40 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
 
       - name: Install dependencies
         run: npm install
 
-      - name: Verify ffprobe sidecar
+      # NEW: ensure ffprobe sidecar exists BEFORE build.rs runs
+      - name: Ensure ffprobe sidecar
         shell: bash
         run: |
-          if [ ! -f "src-tauri/${{ matrix.ffprobe_binary }}" ]; then
-            echo "WARNING: ffprobe sidecar not found: src-tauri/${{ matrix.ffprobe_binary }}"
-            echo "The build will proceed but the app will fall back to system ffprobe."
-          else
-            echo "ffprobe sidecar found: src-tauri/${{ matrix.ffprobe_binary }}"
+          set -euxo pipefail
+          mkdir -p src-tauri
+          F="src-tauri/${{ matrix.ffprobe_binary }}"
+
+          if [ -f "$F" ]; then
+            echo "ffprobe sidecar already present: $F"
+            exit 0
           fi
+
+          echo "ffprobe sidecar missing, downloading: $F"
+
+          # Download from a dedicated release called "ffprobe"
+          URL="https://github.com/mertulgut/exportdoctor/releases/download/ffprobe/${{ matrix.ffprobe_binary }}"
+
+          # Windows runner has curl too; this works everywhere
+          curl -L --retry 3 --fail -o "$F" "$URL"
+
+          # chmod is harmless on Windows; if it errors, ignore
+          chmod +x "$F" 2>/dev/null || true
+
+          ls -la src-tauri | sed -n '1,120p'
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
@@ -69,8 +90,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Export Doctor ${{ github.ref_name }}'
-          releaseBody: 'See the assets to download and install this version.'
+          releaseName: Export Doctor ${{ github.ref_name }}
+          releaseBody: See the assets to download and install this version.
           releaseDraft: true
           prerelease: false
           args: --target ${{ matrix.target }}
