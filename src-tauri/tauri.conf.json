@@ -27,7 +27,14 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg", "app", "msi", "nsis", "deb", "appimage"],
+    "targets": [
+      "dmg",
+      "app",
+      "msi",
+      "nsis",
+      "deb",
+      "appimage"
+    ],
     "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
@@ -36,7 +43,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": ["ffprobe"],
+    "externalBin": [
+      "ffprobe"
+    ],
     "macOS": {
       "minimumSystemVersion": "10.15",
       "signingIdentity": null
@@ -57,7 +66,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDIxRTZCRTEyREVCNDNGRTAKUldUZ1A3VGVFcjdtSVkvUTg2ZnNZRTFCRE4raUZab1VmMFpmRW5VWVU0NFB2ZHJzSXdIZHI2cmsK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVBRjg4RDlGMEM1QzU1RUEKUldUcVZWd01uNDM0Nml4a0FzN0VJRitwNE5MWUJHajRQcXpHZ1g5N1hueEVaQW5vYVVDbjIrUXYK",
       "endpoints": [
         "https://github.com/mertulgut/exportdoctor/releases/latest/download/latest.json"
       ]
