@@ -27,3 +27,6 @@ src-tauri/binaries/ffprobe-*
 
 # Plan files
 PLAN.md
+
+# ffprobe binaries (too large for GitHub)
+src-tauri/ffprobe-*
